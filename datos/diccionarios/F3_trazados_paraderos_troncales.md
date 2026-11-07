@@ -1,8 +1,14 @@
-# Diccionario de datos — Fuente F3: Trazados y Paraderos Troncales
+# Diccionario de datos — F3: Trazados Troncales de TRANSMILENIO (GeoJSON)
 
-| Campo | Tipo | Descripción | Ejemplo | Problema de calidad |
-|---|---|---|---|---|
-| id_ruta | VARCHAR | Identificador único de la línea o ruta de bus. | F/C19 | Ninguno |
-| nombre_ruta | VARCHAR | Origen y destino de la ruta. | Portal Suba - Portal Américas | Ninguno |
-| tipo_servicio | VARCHAR | Clasificación del servicio (Troncal, Alimentador, Zonal). | Troncal | Ninguno |
-| sentido | VARCHAR | Orientación del recorrido (Norte-Sur, Sur-Norte). | Norte-Sur | Abreviaturas heterogéneas (N-S, Norte-Sur). |
+Archivo: [`/datos/raw/Trazados_Troncales_de_TRANSMILENIO.geojson`](../raw/Trazados_Troncales_de_TRANSMILENIO.geojson) · 22 objetos `Feature` (geometría MultiLineString, CRS84). Los atributos están en `$.features[*].properties`.
+
+| Campo | Tipo | Descripción | Ejemplo | Problema de calidad | Regla en PDI |
+|---|---|---|---|---|---|
+| id_trazado | Texto | Identificador del trazado (llave con F2) | TZ002 | Ninguno | Lookup en `t_dim_estacion` |
+| nom_traz | Texto | Nombre del trazado | Calle 26 Extension | Sin tildes y mayúsculas irregulares (`Extension`, `Ciudad De Cali`) | `regla_estandariza_nombres_troncal` |
+| le_troncal | Texto | Letra de la troncal (llave con la ruta de F1) | B | Ninguno | Lookup en `t_dim_ruta` |
+| nom_tronc | Texto | Nombre de la troncal | Americas | Sin tildes (`Americas`) | `regla_estandariza_nombres_troncal` |
+| long_traz | Decimal | Longitud del trazado (km) | 11.82 | Ninguno | — |
+| ori_traz / fin_traz | Texto | Inicio y fin del trazado | Avenida Calle 80 / Terminal | Grafía inconsistente (`Limite del` / `Limite Del`) | No se usan en el DW |
+| fase_tronc | Texto | Fase de implementación | FASE I | Ninguno | — |
+| tipo_tra | Entero | 1 exclusivo, 2 mixto, 3 sin definir | 1 | Ninguno | — |

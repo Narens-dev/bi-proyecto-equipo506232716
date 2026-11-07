@@ -1,12 +1,14 @@
-# Diccionario de datos — Fuente F1: Registro transaccional de validaciones
+# Diccionario de datos — F1: Registro transaccional de validaciones (v2, sintético)
 
-Archivo: [`/datos/raw/Dataset_registros.csv`](../raw/Dataset_registros.csv)
+Archivo: [`/datos/raw/Dataset_registros.csv`](../raw/Dataset_registros.csv) · 55.000 filas · separador `,` · UTF-8
 
-| Campo | Tipo | Descripción | Ejemplo | Problema de calidad |
-|---|---|---|---|---|
-| id_validacion | INTEGER | Identificador único de la transacción de validación. | 100245 | Ninguno (clave primaria limpia) |
-| fecha_hora | VARCHAR / TIMESTAMP | Fecha y hora en que el usuario valida el pasaje. | 2024-10-15 07:32:10 | S1: Formato inconsistente de fechas (DD/MM/YYYY vs YYYY-MM-DD). |
-| id_estacion | INTEGER | Código de la estación o paradero donde ocurrió la validación. | EST_045 | S2: Presencia de valores nulos/vacíos en transacciones de buses zonales. |
-| id_ruta | VARCHAR | Código identificador de la ruta del bus. | F14 | Ninguno |
-| id_tarjeta | VARCHAR | Código encriptado del medio de pago utilizado. | TJ_998341 | Ninguno |
-| monto_tarifa | NUMERIC | Valor cobrado por la validación. | 2.950 | S4: Registros aislados con montos negativos o valores atípicos de cero. |
+| Campo | Tipo en la fuente | Descripción | Ejemplo | Problema de calidad | Regla en PDI |
+|---|---|---|---|---|---|
+| id_validacion | Texto | Identificador de la validación | VAL-0000003 | 180 filas repetidas (reenvío del validador) | `regla_elimina_duplicados` |
+| fecha_hora | Texto | Momento de la validación | 2024-01-01 06:23:00 · 25/03/2024 04:38 PM · 1711986720 | Tres formatos: ISO, 12 h con AM/PM y epoch Unix | `regla_normaliza_fecha_ampm`, `regla_normaliza_fecha_epoch` |
+| id_estacion | Texto | Código de la estación: `EST-` + `num_est` de F2 | EST-07103 | Espacios y minúsculas (` est-07103 `); 38 filas con `EST-00000` no catalogada | `regla_normaliza_codigo_estacion`, `regla_estacion_desconocida` |
+| id_ruta | Texto | Ruta troncal; la letra es la troncal de F3 | RUTA-B12 | Ninguno | — |
+| id_bus | Texto | Bus que prestó el servicio (flota de 450) | BUS-209 | Vacío por fallas de transmisión (≈2 %) | `regla_bus_vacio_a_desconocido` |
+| tipo_tarifa | Texto | General, Sisben, Adulto Mayor, Discapacidad, Estudiantil | General | Ninguno | — |
+| monto_pagado | Texto (entero COP) | Valor cobrado | 2950 | 45 filas en 0 o negativas | `regla_valida_monto_positivo` |
+| metodo_pago | Texto | Tarjeta TuLlave, NFC Celular, Tarjeta Bancaria | Tarjeta TuLlave | Ninguno | — |

@@ -1,0 +1,522 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transformation>
+  <info>
+    <name>t_dim_estacion</name>
+    <description>Carga dim_estacion desde F2 (CSV) enriquecida con F3 (GeoJSON)</description>
+    <extended_description/>
+    <trans_version>2.0</trans_version>
+    <trans_type>Normal</trans_type>
+    <directory>/</directory>
+    <parameters>
+
+    </parameters>
+    <size_rowset>10000</size_rowset>
+    <sleep_time_empty>50</sleep_time_empty>
+    <sleep_time_full>50</sleep_time_full>
+    <unique_connections>N</unique_connections>
+    <feedback_shown>Y</feedback_shown>
+    <feedback_size>50000</feedback_size>
+    <using_thread_priorities>Y</using_thread_priorities>
+    <shared_objects_file/>
+    <capture_step_performance>N</capture_step_performance>
+    <step_performance_capturing_delay>1000</step_performance_capturing_delay>
+    <step_performance_capturing_size_limit>100</step_performance_capturing_size_limit>
+    <created_user>Equipo 506232716</created_user>
+    <created_date>2026/11/06 20:00:00.000</created_date>
+    <modified_user>Equipo 506232716</modified_user>
+    <modified_date>2026/11/06 20:00:00.000</modified_date>
+    <is_key_private>N</is_key_private>
+  </info>
+  <notepads>
+    <notepad>
+      <note>Las filas que pasan por un paso regla_* son las afectadas por esa regla (ver métricas de pasos).</note>
+      <xloc>100</xloc><yloc>20</yloc><width>520</width><heigth>30</heigth>
+      <fontname>Segoe UI</fontname><fontsize>9</fontsize><fontbold>N</fontbold><fontitalic>N</fontitalic>
+      <fontcolorred>14</fontcolorred><fontcolorgreen>58</fontcolorgreen><fontcolorblue>90</fontcolorblue>
+      <backgroundcolorred>201</backgroundcolorred><backgroundcolorgreen>232</backgroundcolorgreen><backgroundcolorblue>251</backgroundcolorblue>
+      <bordercolorred>14</bordercolorred><bordercolorgreen>58</bordercolorgreen><bordercolorblue>90</bordercolorblue>
+      <drawshadow>Y</drawshadow>
+    </notepad>
+  </notepads>
+  <connection>
+    <name>dw_movibogota</name>
+    <server>${DW_HOST}</server>
+    <type>POSTGRESQL</type>
+    <access>Native</access>
+    <database>${DW_DB}</database>
+    <port>${DW_PORT}</port>
+    <username>${DW_USER}</username>
+    <password>${DW_PASSWORD}</password>
+    <servername/>
+    <data_tablespace/>
+    <index_tablespace/>
+    <attributes>
+      <attribute><code>FORCE_IDENTIFIERS_TO_LOWERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>FORCE_IDENTIFIERS_TO_UPPERCASE</code><attribute>N</attribute></attribute>
+      <attribute><code>IS_CLUSTERED</code><attribute>N</attribute></attribute>
+      <attribute><code>PORT_NUMBER</code><attribute>${DW_PORT}</attribute></attribute>
+      <attribute><code>PRESERVE_RESERVED_WORD_CASE</code><attribute>Y</attribute></attribute>
+      <attribute><code>QUOTE_ALL_FIELDS</code><attribute>N</attribute></attribute>
+      <attribute><code>SUPPORTS_BOOLEAN_DATA_TYPE</code><attribute>Y</attribute></attribute>
+      <attribute><code>SUPPORTS_TIMESTAMP_DATA_TYPE</code><attribute>Y</attribute></attribute>
+      <attribute><code>USE_POOLING</code><attribute>N</attribute></attribute>
+    </attributes>
+  </connection>
+  <order>
+    <hop><from>F2 CSV estaciones</from><to>codigo_tiene_5_digitos</to><enabled>Y</enabled></hop>
+    <hop><from>codigo_tiene_5_digitos</from><to>codigo_ok</to><enabled>Y</enabled></hop>
+    <hop><from>codigo_tiene_5_digitos</from><to>regla_codigo_5_digitos</to><enabled>Y</enabled></hop>
+    <hop><from>regla_codigo_5_digitos</from><to>codigo_ok</to><enabled>Y</enabled></hop>
+    <hop><from>codigo_ok</from><to>nombre_requiere_ajuste</to><enabled>Y</enabled></hop>
+    <hop><from>nombre_requiere_ajuste</from><to>regla_normaliza_nombre_estacion</to><enabled>Y</enabled></hop>
+    <hop><from>nombre_requiere_ajuste</from><to>nombre_ok</to><enabled>Y</enabled></hop>
+    <hop><from>regla_normaliza_nombre_estacion</from><to>nombre_ok</to><enabled>Y</enabled></hop>
+    <hop><from>nombre_ok</from><to>area_es_cero</to><enabled>Y</enabled></hop>
+    <hop><from>area_es_cero</from><to>regla_area_cero_a_nulo</to><enabled>Y</enabled></hop>
+    <hop><from>area_es_cero</from><to>area_ok</to><enabled>Y</enabled></hop>
+    <hop><from>regla_area_cero_a_nulo</from><to>area_ok</to><enabled>Y</enabled></hop>
+    <hop><from>area_ok</from><to>deriva_atributos_estacion</to><enabled>Y</enabled></hop>
+    <hop><from>deriva_atributos_estacion</from><to>busca_trazado_F3</to><enabled>Y</enabled></hop>
+    <hop><from>regla_estandariza_nombres_troncal</from><to>busca_trazado_F3</to><enabled>Y</enabled></hop>
+    <hop><from>busca_trazado_F3</from><to>carga_dim_estacion</to><enabled>Y</enabled></hop>
+    <hop><from>F3 JSON trazados</from><to>regla_estandariza_nombres_troncal</to><enabled>Y</enabled></hop>
+  </order>
+  <step>
+    <name>F2 CSV estaciones</name>
+    <type>CsvInput</type>
+    <description></description>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <filename>${Internal.Entry.Current.Directory}/../../datos/raw/Estaciones_Troncales_de_TRANSMILENIO.csv</filename>
+    <filename_field/>
+    <rownum_field/>
+    <include_filename>N</include_filename>
+    <separator>Lee el CSV original de Estaciones Troncales de TRANSMILENIO</separator>
+    <enclosure>"</enclosure>
+    <header>Y</header>
+    <buffer_size>50000</buffer_size>
+    <lazy_conversion>N</lazy_conversion>
+    <add_filename_result>N</add_filename_result>
+    <parallel>N</parallel>
+    <newline_possible>N</newline_possible>
+    <encoding>UTF-8</encoding>
+    <fields>
+      <field><name>X</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>Y</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>observ</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>longitud</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>latitud</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>objectid</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>num_est</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>nom_est</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>id_trazado</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>long_est</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>ancho_est</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>area_est</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>esta_oper</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>eta_oper</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>tipo_esta</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>ub_est</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>num_acc</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>acc_esp</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>acc_depr</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>acc_puent</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>cod_nodo</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>cap_biart</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>num_vag</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>cap_art</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>globalid</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>created_user</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>created_date</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>last_edited_user</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+      <field><name>last_edited_date</name><type>String</type><format></format><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type></field>
+    </fields>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>100</xloc><yloc>100</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>codigo_tiene_5_digitos</name>
+    <type>FilterRows</type>
+    <description></description>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <send_true_to>codigo_ok</send_true_to>
+    <send_false_to>regla_codigo_5_digitos</send_false_to>
+    <compare>
+      <condition><negated>N</negated><leftvalue>num_est</leftvalue><function>REGEXP</function><rightvalue/><value><name>constant</name><type>String</type><text>\d{5}</text><length>-1</length><precision>-1</precision><isnull>N</isnull><mask/></value></condition>
+    </compare>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>300</xloc><yloc>100</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>regla_codigo_5_digitos</name>
+    <type>ScriptValueMod</type>
+    <description></description>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <compatible>N</compatible>
+    <optimizationLevel>9</optimizationLevel>
+    <jsScripts>
+      <jsScript>
+        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>// F2.num_est sin cero a la izquierda (9005 -&gt; 09005)
+var s = ('' + num_est).replace(/\s/g, '');
+while (s.length &lt; 5) { s = '0' + s; }
+num_est = s;</jsScript_script>
+      </jsScript>
+    </jsScripts>
+    <fields>
+      <field><name>num_est</name><rename>num_est</rename><type>String</type><length>-1</length><precision>-1</precision><replace>Y</replace></field>
+    </fields>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>300</xloc><yloc>230</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>codigo_ok</name>
+    <type>Dummy</type>
+    <description></description>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>500</xloc><yloc>100</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>nombre_requiere_ajuste</name>
+    <type>FilterRows</type>
+    <description></description>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <send_true_to>regla_normaliza_nombre_estacion</send_true_to>
+    <send_false_to>nombre_ok</send_false_to>
+    <compare>
+      <condition><negated>N</negated><leftvalue>nom_est</leftvalue><function>REGEXP</function><rightvalue/><value><name>constant</name><type>String</type><text>.*(–|AV\.|\s{2}|^\s|\s$).*</text><length>-1</length><precision>-1</precision><isnull>N</isnull><mask/></value></condition>
+    </compare>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>700</xloc><yloc>100</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>regla_normaliza_nombre_estacion</name>
+    <type>ScriptValueMod</type>
+    <description></description>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <compatible>N</compatible>
+    <optimizationLevel>9</optimizationLevel>
+    <jsScripts>
+      <jsScript>
+        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>// F2.nom_est: guion largo, abreviatura AV. y espacios dobles
+var s = '' + nom_est;
+s = s.replace(/\u2013/g, '-').replace(/AV\./g, 'Av.');
+s = s.replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+nom_est = s;</jsScript_script>
+      </jsScript>
+    </jsScripts>
+    <fields>
+      <field><name>nom_est</name><rename>nom_est</rename><type>String</type><length>-1</length><precision>-1</precision><replace>Y</replace></field>
+    </fields>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>700</xloc><yloc>230</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>nombre_ok</name>
+    <type>Dummy</type>
+    <description></description>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>900</xloc><yloc>100</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>area_es_cero</name>
+    <type>FilterRows</type>
+    <description></description>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <send_true_to>regla_area_cero_a_nulo</send_true_to>
+    <send_false_to>area_ok</send_false_to>
+    <compare>
+      <condition><negated>N</negated><leftvalue>area_est</leftvalue><function>=</function><rightvalue/><value><name>constant</name><type>String</type><text>0</text><length>-1</length><precision>-1</precision><isnull>N</isnull><mask/></value></condition>
+    </compare>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>1100</xloc><yloc>100</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>regla_area_cero_a_nulo</name>
+    <type>ScriptValueMod</type>
+    <description></description>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <compatible>N</compatible>
+    <optimizationLevel>9</optimizationLevel>
+    <jsScripts>
+      <jsScript>
+        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>// F2.area_est = 0 en portales e intermedias: dato no medido -&gt; nulo
+area_est = null;</jsScript_script>
+      </jsScript>
+    </jsScripts>
+    <fields>
+      <field><name>area_est</name><rename>area_est</rename><type>String</type><length>-1</length><precision>-1</precision><replace>Y</replace></field>
+    </fields>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>1100</xloc><yloc>230</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>area_ok</name>
+    <type>Dummy</type>
+    <description></description>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>1300</xloc><yloc>100</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>deriva_atributos_estacion</name>
+    <type>ScriptValueMod</type>
+    <description></description>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <compatible>N</compatible>
+    <optimizationLevel>9</optimizationLevel>
+    <jsScripts>
+      <jsScript>
+        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>function n(v){ return (v == null || ('' + v) == '') ? null : parseFloat(v); }
+var tipo = '' + tipo_esta;
+var nom = '' + nom_est;
+var tipo_estacion = (tipo == '1') ? 'Portal' : (nom.indexOf('Temporal') == 0 ? 'Temporal' : (tipo == '2' ? 'Intermedia' : 'Sencilla'));
+var num_vagones = n(num_vag);
+var num_accesos = n(num_acc);
+var capacidad_biart = n(cap_biart);
+var capacidad_art = n(cap_art);
+var area_m2 = n(area_est);
+var latitud_n = n(latitud);
+var longitud_n = n(longitud);</jsScript_script>
+      </jsScript>
+    </jsScripts>
+    <fields>
+      <field><name>tipo_estacion</name><rename>tipo_estacion</rename><type>String</type><length>-1</length><precision>-1</precision><replace>N</replace></field>
+      <field><name>num_vagones</name><rename>num_vagones</rename><type>Integer</type><length>-1</length><precision>-1</precision><replace>N</replace></field>
+      <field><name>num_accesos</name><rename>num_accesos</rename><type>Integer</type><length>-1</length><precision>-1</precision><replace>N</replace></field>
+      <field><name>capacidad_biart</name><rename>capacidad_biart</rename><type>Integer</type><length>-1</length><precision>-1</precision><replace>N</replace></field>
+      <field><name>capacidad_art</name><rename>capacidad_art</rename><type>Integer</type><length>-1</length><precision>-1</precision><replace>N</replace></field>
+      <field><name>area_m2</name><rename>area_m2</rename><type>Number</type><length>-1</length><precision>-1</precision><replace>N</replace></field>
+      <field><name>latitud_n</name><rename>latitud_n</rename><type>Number</type><length>-1</length><precision>-1</precision><replace>N</replace></field>
+      <field><name>longitud_n</name><rename>longitud_n</rename><type>Number</type><length>-1</length><precision>-1</precision><replace>N</replace></field>
+    </fields>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>1300</xloc><yloc>300</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>busca_trazado_F3</name>
+    <type>StreamLookup</type>
+    <description>Integra F2 con F3 por id_trazado</description>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <from>regla_estandariza_nombres_troncal</from>
+    <input_sorted>N</input_sorted>
+    <preserve_memory>Y</preserve_memory>
+    <sorted_list>N</sorted_list>
+    <integer_pair>N</integer_pair>
+    <lookup><key><name>id_trazado</name><field>id_trazado</field></key><value><name>nom_traz</name><rename>nombre_trazado</rename><default>Desconocido</default><type>String</type></value><value><name>le_troncal</name><rename>letra_troncal</rename><default>N/D</default><type>String</type></value><value><name>nom_tronc</name><rename>nombre_troncal</rename><default>Desconocida</default><type>String</type></value></lookup>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>1300</xloc><yloc>450</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>carga_dim_estacion</name>
+    <type>TableOutput</type>
+    <description></description>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <connection>dw_movibogota</connection>
+    <schema>dw</schema>
+    <table>dim_estacion</table>
+    <commit>1000</commit>
+    <truncate>N</truncate>
+    <ignore_errors>N</ignore_errors>
+    <use_batch>Y</use_batch>
+    <specify_fields>Y</specify_fields>
+    <partitioning_enabled>N</partitioning_enabled>
+    <partitioning_field/>
+    <partitioning_daily>N</partitioning_daily>
+    <partitioning_monthly>Y</partitioning_monthly>
+    <tablename_in_field>N</tablename_in_field>
+    <tablename_field/>
+    <tablename_in_table>Y</tablename_in_table>
+    <return_keys>N</return_keys>
+    <return_field/>
+    <fields>
+      <field><column_name>cod_estacion</column_name><stream_name>num_est</stream_name></field>
+      <field><column_name>nombre_estacion</column_name><stream_name>nom_est</stream_name></field>
+      <field><column_name>ubicacion</column_name><stream_name>ub_est</stream_name></field>
+      <field><column_name>tipo_estacion</column_name><stream_name>tipo_estacion</stream_name></field>
+      <field><column_name>num_vagones</column_name><stream_name>num_vagones</stream_name></field>
+      <field><column_name>num_accesos</column_name><stream_name>num_accesos</stream_name></field>
+      <field><column_name>capacidad_biart</column_name><stream_name>capacidad_biart</stream_name></field>
+      <field><column_name>capacidad_art</column_name><stream_name>capacidad_art</stream_name></field>
+      <field><column_name>area_m2</column_name><stream_name>area_m2</stream_name></field>
+      <field><column_name>latitud</column_name><stream_name>latitud_n</stream_name></field>
+      <field><column_name>longitud</column_name><stream_name>longitud_n</stream_name></field>
+      <field><column_name>id_trazado</column_name><stream_name>id_trazado</stream_name></field>
+      <field><column_name>nombre_trazado</column_name><stream_name>nombre_trazado</stream_name></field>
+      <field><column_name>letra_troncal</column_name><stream_name>letra_troncal</stream_name></field>
+      <field><column_name>nombre_troncal</column_name><stream_name>nombre_troncal</stream_name></field>
+    </fields>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>1550</xloc><yloc>450</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>F3 JSON trazados</name>
+    <type>JsonInput</type>
+    <description>Lee el GeoJSON original de Trazados Troncales de TRANSMILENIO</description>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <include>N</include>
+    <include_field/>
+    <rownum>N</rownum>
+    <addresultfile>N</addresultfile>
+    <readurl>N</readurl>
+    <removeSourceField>N</removeSourceField>
+    <IsIgnoreEmptyFile>N</IsIgnoreEmptyFile>
+    <doNotFailIfNoFile>N</doNotFailIfNoFile>
+    <ignoreMissingPath>Y</ignoreMissingPath>
+    <defaultPathLeafToNull>Y</defaultPathLeafToNull>
+    <rownum_field/>
+    <file>
+      <name>${Internal.Entry.Current.Directory}/../../datos/raw/Trazados_Troncales_de_TRANSMILENIO.geojson</name>
+      <filemask/>
+      <exclude_filemask/>
+      <file_required>N</file_required>
+      <include_subfolders>N</include_subfolders>
+    </file>
+    <fields>
+      <field><name>id_trazado</name><path>$.features[*].properties.id_trazado</path><type>String</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>nom_traz</name><path>$.features[*].properties.nom_traz</path><type>String</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>le_troncal</name><path>$.features[*].properties.le_troncal</path><type>String</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+      <field><name>nom_tronc</name><path>$.features[*].properties.nom_tronc</path><type>String</type><format/><currency/><decimal/><group/><length>-1</length><precision>-1</precision><trim_type>none</trim_type><repeat>N</repeat></field>
+    </fields>
+    <limit>0</limit>
+    <IsInFields>N</IsInFields>
+    <IsAFile>N</IsAFile>
+    <valueField/>
+    <shortFileFieldName/>
+    <pathFieldName/>
+    <hiddenFieldName/>
+    <lastModificationTimeFieldName/>
+    <uriNameFieldName/>
+    <rootUriNameFieldName/>
+    <extensionFieldName/>
+    <sizeFieldName/>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>100</xloc><yloc>450</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>regla_estandariza_nombres_troncal</name>
+    <type>ScriptValueMod</type>
+    <description>Corrige tildes y mayúsculas en nombres de F3</description>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <compatible>N</compatible>
+    <optimizationLevel>9</optimizationLevel>
+    <jsScripts>
+      <jsScript>
+        <jsScript_type>0</jsScript_type>
+        <jsScript_name>Script 1</jsScript_name>
+        <jsScript_script>// F3: nombres de trazados y troncales sin tildes y con mayúsculas inconsistentes
+function corrige(t) {
+  if (t == null) return t;
+  var s = ('' + t).replace(/\s+/g, ' ').replace(/^\s+|\s+$/g, '');
+  var dic = { 'Americas': 'Américas', 'Eldorado': 'El Dorado', 'ElDorado': 'El Dorado',
+              'Extension': 'Extensión', 'Limite': 'Límite', 'Cali': 'Cali' };
+  for (var k in dic) { s = s.replace(new RegExp('\\b' + k + '\\b', 'g'), dic[k]); }
+  s = s.replace(/ De /g, ' de ').replace(/ Del /g, ' del ');
+  return s;
+}
+nom_traz = corrige(nom_traz);
+nom_tronc = corrige(nom_tronc);
+le_troncal = ('' + le_troncal).replace(/^\s+|\s+$/g, '').toUpperCase();</jsScript_script>
+      </jsScript>
+    </jsScripts>
+    <fields>
+      <field><name>nom_traz</name><rename>nom_traz</rename><type>String</type><length>-1</length><precision>-1</precision><replace>Y</replace></field>
+      <field><name>nom_tronc</name><rename>nom_tronc</rename><type>String</type><length>-1</length><precision>-1</precision><replace>Y</replace></field>
+      <field><name>le_troncal</name><rename>le_troncal</rename><type>String</type><length>-1</length><precision>-1</precision><replace>Y</replace></field>
+    </fields>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>300</xloc><yloc>450</yloc><draw>Y</draw></GUI>
+  </step>
+  <step_error_handling>
+
+  </step_error_handling>
+  <slave-step-copy-partition-distribution/>
+  <slave_transformation>N</slave_transformation>
+  <attributes/>
+</transformation>

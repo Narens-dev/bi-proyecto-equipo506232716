@@ -1,0 +1,7 @@
+# Copiar estas líneas al final de  %USERPROFILE%\.kettle\kettle.properties  (Windows)
+# o  ~/.kettle/kettle.properties  (Linux/macOS). Este archivo de ejemplo NO lleva contraseña real.
+DW_HOST=localhost
+DW_PORT=5432
+DW_DB=movibogota_dw
+DW_USER=postgres
+DW_PASSWORD=escriba_aqui_su_contrasena_local

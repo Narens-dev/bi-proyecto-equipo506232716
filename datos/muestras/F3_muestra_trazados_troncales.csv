@@ -1,0 +1,21 @@
+objectid,id_trazado,long_traz,ori_traz,fin_traz,nom_traz,le_troncal,nom_tronc,fase_tronc,eta_oper,esta_oper,tipo_tra
+126,TZ002,11.8213993,Avenida Calle 80,Terminal,Autopista Norte,B,Autopista Norte,FASE I,1,1,1
+127,TZ008,9.95684642,Autopista Norte,Avenida Calle 6,NQS Central,E,NQS Central,FASE II,1,1,1
+128,TZ009,13.09255757,Avenida Caracas,Portal Americas,Americas,F,Americas,FASE II,1,1,1
+129,TZ015,1.9319687,Carrera 3,Avenida Caracas,Eje Ambiental,J,Eje Ambiental,FASE I,1,1,1
+130,TZ018,6.4881783,Portal 20 De Julio,San Diego,Carrera 10,L,Carrera 10,FASE III,1,1,1
+131,TZ004,1.41360378,Portal Suba,Avenida ALO,Suba Extension,C,Suba,FASE II,1,1,2
+132,TZ007,2.20554405,Carrera 10,Avenida NQS,Calle 6,E,NQS Central,FASE III,1,1,1
+133,TZ001,8.31087152,Avenida Calle 80,Avenida Calle 6,Caracas Centro,A,Caracas,FASE I,1,1,1
+134,TZ010,10.16601251,Avenida Calle 6,Limite del Distrito,NQS Sur,G,NQS Sur,FASE II,1,1,1
+135,TZ014,1.75868858,Avenida Caracas,Portal Tunal,Tunal,H,Caracas Sur,FASE I,1,1,1
+136,TZ019,0.64098697,San Diego,Museo Nacional,Carrera 7,M,Carrera 7,FASE III,1,1,1
+137,TZ012,7.40954562,Avenida Calle 6,Molinos,Caracas Sur,H,Caracas Sur,FASE I,1,1,1
+138,TZ011,2.85964512,Limite Del Distrito,San Mateo,Soacha,G,NQS Sur,FASE II,1,1,1
+139,TZ020,11.65402973,Museo Nacional,Avenida Calle 134,Carrera 7,M,Carrera 7,FASE III,1,1,2
+140,TZ017,2.22037955,Portal Eldorado,Aeropuerto El Dorado,Calle 26 Extension,K,Calle 26,FASE III,1,1,2
+141,TZ006,2.70267696,Portal 80,Limite del Distrito,Calle 80 Extension,D,Calle 80,FASE I,1,1,2
+142,TZ013,2.52892475,Molinos,Portal De Usme,Caracas Sur Extension,H,Caracas Sur,FASE I,1,1,1
+143,TZ005,7.3802452,Autopista Norte,Portal 80,Calle 80,D,Calle 80,FASE I,1,1,1
+144,TZ016,12.25248872,Carrera 3,Portal ElDorado,Calle 26,K,Calle 26,FASE III,1,1,1
+164,TZ003,11.48905023,Avenida Calle 80,Portal Suba,Suba,C,Suba,FASE II,1,1,1

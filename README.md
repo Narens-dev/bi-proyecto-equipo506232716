@@ -2,11 +2,22 @@
 
 ## Descripción del caso
 
-MoviBogotá S.A. es un operador privado de transporte masivo urbano en Bogotá, responsable de más de 450 buses y más de 80 rutas. Actualmente, la organización padece una arquitectura accidental debido a la fragmentación de sus datos operativos (silos de datos en archivos planos, telemetría GPS e informes manuales de mantenimiento en Excel). Esto impide que la Gerencia de Operaciones y Planeación del Servicio tome decisiones oportunas para responder a la pregunta crítica del negocio:
+MoviBogotá S.A. es un operador privado de transporte masivo urbano en Bogotá, con una flota de 450 buses troncales que opera 7 rutas sobre 7 corredores troncales (Caracas, Autopista Norte, Américas, NQS Sur, Caracas Sur, Calle 26 y Carrera 10). Actualmente, la organización padece una arquitectura accidental debido a la fragmentación de sus datos operativos (silos de datos en archivos planos, telemetría GPS e informes manuales de mantenimiento en Excel). Esto impide que la Gerencia de Operaciones y Planeación del Servicio tome decisiones oportunas para responder a la pregunta crítica del negocio:
 
 > ¿Cómo programar y redistribuir de forma dinámica la flota de buses y las frecuencias de despacho por ruta e intervalos por horas, minimizando los costos de distancia recorrida en vacío y los tiempos de espera de los usuarios en estaciones de alta demanda?
 
-El documento completo de la Entrega 1 está en [`docs/entregas/BI-Entrega-1-Equipo506232716.pdf`](docs/entregas/BI-Entrega-1-Equipo506232716.pdf).
+Documentos de las entregas:
+- Entrega 1 (diagnóstico y diseño): [`docs/entregas/BI-Entrega-1-Equipo506232716.pdf`](docs/entregas/BI-Entrega-1-Equipo506232716.pdf)
+- Entrega 2 (data warehouse, ETL y tablero): [`docs/entregas/BI-Entrega-2-Equipo506232716.pdf`](docs/entregas/BI-Entrega-2-Equipo506232716.pdf)
+
+## Preguntas de negocio (ajustadas en la Entrega 2 a los datos disponibles)
+
+| # | Pregunta | Tipo |
+|---|---|---|
+| P0 | ¿Qué troncales, estaciones y franjas horarias concentran la mayor demanda de validaciones y recaudo, por mes, en 2024–2025? | BI |
+| P1 | ¿Cuál es el volumen diario de validaciones por tipo de tarifa y estación? | BI |
+| P2 | ¿Qué rutas tienen más demanda en hora pico frente a valle y cuántas validaciones atiende cada bus asignado? | BI |
+| P3 | ¿Cuántas validaciones se esperan por estación y franja horaria en el próximo trimestre? | BA (Entrega 3) |
 
 ## Integrantes
 
@@ -22,10 +33,10 @@ Docente: Leandro Pájaro Fuentes
 
 | Capa | Herramienta |
 |---|---|
-| Fuentes de datos | CSV y JSON (validaciones, Portal de Datos Abiertos, trazados y paraderos) |
-| Integración (ETL) | Pentaho Data Integration (archivos `.ktr` y `.kjb`) |
-| Almacén de datos | PostgreSQL (modelo en estrella) |
-| Usuario final | Microsoft Power BI |
+| Fuentes de datos | F1 validaciones (CSV, sintético) · F2 Estaciones Troncales de TRANSMILENIO (CSV) · F3 Trazados Troncales de TRANSMILENIO (GeoJSON) |
+| Integración (ETL) | Pentaho Data Integration 9.4 / 10.x (7 `.ktr` y 1 `.kjb`) |
+| Almacén de datos | PostgreSQL 16, base `movibogota_dw`, esquema `dw` (modelo en estrella: 6 dimensiones + 1 tabla de hechos) |
+| Usuario final | Microsoft Power BI Desktop (conectado a PostgreSQL) |
 | Modelo predictivo | Python (notebooks) |
 | Gobierno y versionamiento | GitHub, draw.io |
 
@@ -55,6 +66,13 @@ Docente: Leandro Pájaro Fuentes
 
 ## Cómo reproducir
 
-1. Obtener las fuentes siguiendo [`datos/descarga.md`](datos/descarga.md); los archivos originales están en [`datos/raw/`](datos/raw/).
-2. Revisar los diccionarios en [`datos/diccionarios/`](datos/diccionarios/) y los diagramas en [`docs/diagramas/`](docs/diagramas/). Los PNG se pueden arrastrar a [draw.io](https://app.diagrams.net/) para abrirlos como diagramas editables.
-3. Los pasos de creación del data warehouse, ETL, dashboard y modelo predictivo se documentarán en las siguientes entregas.
+Requisitos: PostgreSQL 16, Pentaho Data Integration 9.4 o 10.x (Java 11/17) y Power BI Desktop.
+
+1. **Fuentes.** Clonar el repositorio: las tres fuentes originales ya están en [`datos/raw/`](datos/raw/). Su origen y cómo volver a descargarlas está en [`datos/descarga.md`](datos/descarga.md); los diccionarios, en [`datos/diccionarios/`](datos/diccionarios/).
+2. **Data warehouse.** Ejecutar en orden los scripts de [`dw/ddl/`](dw/ddl/) (`00` crea la base; `01`–`08` crean el esquema, las 6 dimensiones y la tabla de hechos con sus llaves).
+3. **ETL.** Configurar la conexión en `kettle.properties` y ejecutar `etl/trabajos/j_carga_dw.kjb`. Detalle en [`etl/README.md`](etl/README.md).
+4. **Conciliación.** Desde la raíz del repositorio, ejecutar con `psql` los scripts de [`dw/conciliacion/`](dw/conciliacion/) en orden (`01` copia las fuentes crudas al esquema `conciliacion`; `02` y `03` comparan con el DW; `04` da las cifras del tablero).
+5. **Tablero.** Abrir [`dashboard/tablero_movibogota.pbix`](dashboard/) y actualizar (*Inicio › Actualizar*) con las credenciales locales de PostgreSQL. Construcción y medidas DAX: [`dashboard/README.md`](dashboard/README.md).
+6. **Diagrama físico.** `python docs/diagramas/generar_diagrama_fisico.py "host=localhost dbname=movibogota_dw user=postgres"` lo regenera desde el catálogo de la base.
+
+Ningún archivo del repositorio contiene contraseñas.
