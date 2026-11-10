@@ -60,7 +60,7 @@ Docente: Leandro Pájaro Fuentes
 │   ├── transformaciones/  archivos .ktr de Pentaho
 │   ├── trabajos/          archivos .kjb de Pentaho
 │   └── README.md          orden de ejecución y parámetros
-├── dashboard/           archivo .pbix o enlace publicado, y capturas
+├── dashboard/           enlace al reporte de Looker Studio, campos calculados y capturas
 └── modelo/              notebooks de Python del modelo predictivo
 ```
 
@@ -72,7 +72,7 @@ Requisitos: PostgreSQL 16, Pentaho Data Integration 9.4 o 10.x (Java 11/17) y Lo
 2. **Data warehouse.** Ejecutar en orden los scripts de [`dw/ddl/`](dw/ddl/) (`00` crea la base; `01`–`08` crean el esquema, las 6 dimensiones y la tabla de hechos con sus llaves).
 3. **ETL.** Configurar la conexión en `kettle.properties` y ejecutar `etl/trabajos/j_carga_dw.kjb`. Detalle en [`etl/README.md`](etl/README.md).
 4. **Conciliación.** Desde la raíz del repositorio, ejecutar con `psql` los scripts de [`dw/conciliacion/`](dw/conciliacion/) en orden (`01` copia las fuentes crudas al esquema `conciliacion`; `02` y `03` comparan con el DW; `04` da las cifras del tablero).
-5. **Tablero.** Abrir [`dashboard/tablero_movibogota.pbix`](dashboard/) y actualizar (*Inicio › Actualizar*) con las credenciales locales de PostgreSQL. Construcción y medidas DAX: [`dashboard/README.md`](dashboard/README.md).
+5. **Tablero.** Abrir el reporte de Looker Studio (<https://datastudio.google.com/reporting/ff362d1b-b283-4d16-969c-23989bdc0614>). Conexión, campos calculados y páginas: [`dashboard/README.md`](dashboard/README.md).
 6. **Diagrama físico.** `python docs/diagramas/generar_diagrama_fisico.py "host=localhost dbname=movibogota_dw user=postgres"` lo regenera desde el catálogo de la base.
 
 Ningún archivo del repositorio contiene contraseñas.

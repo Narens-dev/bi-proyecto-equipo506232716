@@ -1,51 +1,54 @@
-# Tablero — Power BI Desktop
+# Tablero — Looker Studio
 
-Archivo: `tablero_movibogota.pbix` · Capturas: `captura_p1_demanda.png`, `captura_p2_tarifas.png`, `captura_p3_rutas_flota.png`.
+Reporte: **MoviBogotá S.A. - Tablero de demanda (DW movibogota_dw)**
+<https://datastudio.google.com/reporting/ff362d1b-b283-4d16-969c-23989bdc0614> (pedir acceso al equipo si no abre).
+
+Capturas: `pagina1_demanda.png`, `pagina2_tarifas.png`, `pagina3_rutas_flota.png`.
 
 ## 1. Conexión al data warehouse (no a los archivos de las fuentes)
 
-1. *Inicio › Obtener datos › Base de datos PostgreSQL*. Servidor `localhost:5432`, base `movibogota_dw`, modo **Importar**.
-2. Credenciales: *Base de datos*, usuario `postgres` y su contraseña local (Power BI la guarda en su equipo, no en el .pbix).
-3. Seleccionar **solo** las tablas del esquema `dw`: `dim_tiempo`, `dim_hora`, `dim_estacion`, `dim_ruta`, `dim_bus`, `dim_tarifa`, `fact_validaciones`. Renombrarlas quitando el prefijo `dw `.
-4. *Vista de modelo*: comprobar las 6 relaciones 1:* desde cada `sk_*` de la dimensión a `fact_validaciones` (dirección de filtro única). Crear las que falten arrastrando la columna.
-5. Seleccionar `dim_tiempo` › *Herramientas de tabla › Marcar como tabla de fechas* › columna `fecha`.
-6. Ordenar columnas: `nombre_mes` por `mes`, `nombre_dia` por `dia_semana`, `franja_horaria` por `orden_franja`.
-7. Crear las medidas de [`medidas_dax.md`](medidas_dax.md) y darles formato (número entero con separador de miles; recaudo como moneda COP sin decimales; porcentajes con 1 decimal).
+El tablero lee una copia del DW `movibogota_dw` publicada en PostgreSQL (Supabase, proyecto `movibogota-dw`), con el mismo esquema `dw` que crean los scripts de `/dw/ddl` y la misma carga que hace el ETL de `/etl`.
 
-## 2. Páginas y visuales
+1. En Looker Studio: *Añadir datos › PostgreSQL*.
+2. Host `aws-0-us-east-1.pooler.supabase.com`, puerto `5432`, base `postgres`, usuario de solo lectura `tablero_lectura.pspgdsiwhuwbxtnkteff` (la contraseña no está en el repositorio).
+3. *Consulta personalizada*: `SELECT * FROM dw.v_tablero_validaciones;`
 
-En las tres páginas: segmentadores (todos con interacción de filtro sobre todos los visuales de la página) **Año** (`dim_tiempo[anio]`, sin selección por defecto = 2024 y 2025), **Mes** (`dim_tiempo[nombre_mes]`) y **Troncal** (`dim_estacion[nombre_troncal]`; en la página 3 usar `dim_ruta[nombre_troncal]`). Por defecto filtran todos los visuales de su página.
+`dw.v_tablero_validaciones` une `fact_validaciones` con sus 6 dimensiones (una fila por validación, 54.775 filas). El tablero no lee los CSV/GeoJSON de `/datos`.
 
-### Página 1 · «Demanda por estación y franja» (P0)
-| Visual | Tipo | Campos | Título |
-|---|---|---|---|
-| Tarjeta KPI | Tarjeta (nueva) o KPI | `[Validaciones último año]` con referencia `[Validaciones año anterior]` y `[Var % validaciones]` | Validaciones del último año vs. año anterior |
-| Tarjeta KPI | Tarjeta (nueva) o KPI | `[Recaudo último año]` vs `[Recaudo año anterior]` y `[Var % recaudo]` | Recaudo (COP) del último año vs. año anterior |
-| Barras horizontales | Gráfico de barras agrupadas, orden descendente | Eje Y `dim_estacion[nombre_troncal]`, X `[Validaciones]` | Validaciones por troncal (n.º de validaciones) |
-| Matriz con escala de color | Matriz + formato condicional (color de fondo) | Filas `dim_estacion[nombre_estacion]` (Top 10 por `[Validaciones]`), columnas `dim_hora[franja_horaria]`, valores `[Validaciones]` | Top 10 estaciones por franja horaria (validaciones) |
-| Líneas | Gráfico de líneas | Eje X `dim_tiempo[anio_mes]`, Y `[Validaciones]`, leyenda `dim_tiempo[anio]` | Validaciones por mes, 2024–2025 |
+## 2. Campos calculados
 
-### Página 2 · «Volumen diario por tarifa y estación» (P1)
-| Visual | Tipo | Campos | Título |
-|---|---|---|---|
-| Tarjeta | Tarjeta | `[Promedio diario]` | Promedio diario de validaciones (validaciones/día) |
-| Barras horizontales | Barras agrupadas | Eje Y `dim_tarifa[tipo_tarifa]`, X `[Promedio diario]` | Promedio diario de validaciones por tipo de tarifa (validaciones/día) |
-| Matriz | Matriz | Filas `dim_estacion[nombre_estacion]`, columnas `dim_tarifa[tipo_tarifa]`, valores `[Validaciones]` | Validaciones por estación y tipo de tarifa |
-| Columnas apiladas 100 % | Columnas apiladas 100 % | Eje X `dim_tiempo[anio_mes]`, leyenda `dim_tarifa[grupo_tarifa]`, Y `[Validaciones]` | Participación tarifa plena vs. subsidiada por mes (%) |
+Ver [`medidas_looker.md`](medidas_looker.md).
 
-### Página 3 · «Rutas y flota: pico vs. valle» (P2)
-| Visual | Tipo | Campos | Título |
-|---|---|---|---|
-| Tarjeta KPI | KPI / medidor | `[% en hora pico]` frente a `[Meta % hora pico]` | % de validaciones en hora pico vs. meta 55 % |
-| Tarjeta KPI | Tarjeta | `[Validaciones por bus]` vs `[Validaciones por bus (promedio red)]` | Validaciones por bus vs. promedio de la red |
-| Barras agrupadas | Barras horizontales agrupadas | Eje Y `dim_ruta[cod_ruta]`, X `[Validaciones pico]` y `[Validaciones valle]` | Validaciones por ruta en hora pico y valle |
-| Barras + línea de referencia | Barras horizontales, ordenadas desc. + *Análisis › Línea constante* = `[Validaciones por bus (promedio red)]` | Eje Y `dim_ruta[cod_ruta]`, X `[Validaciones por bus]` | Validaciones por bus en servicio, por ruta (validaciones/bus) |
-| Columnas | Gráfico de columnas | Eje X `dim_hora[hora]` (0–23), Y `[Validaciones]` | Validaciones por hora del día (n.º de validaciones) |
+## 3. Páginas y visuales
 
-## 3. Reglas de presentación (rúbrica T6–T8)
-- Cada visual con título que diga qué muestra; ejes con nombre y unidad («n.º de validaciones», «COP», «%»).
-- Sin gráficos 3D, sin tortas de muchas categorías, sin imágenes decorativas.
-- Tendencias en línea; comparaciones entre categorías en barras ordenadas.
+Controles en las tres páginas: **intervalo de fechas** (sobre `fecha`) y **lista desplegable de troncal** (`troncal_estacion` en las páginas 1 y 2; `troncal_ruta` en la página 3). Por defecto filtran todos los visuales de su página.
 
-## 4. Capturas
-*Archivo › Exportar › PDF* o recorte de pantalla de cada página a 100 % de zoom; guardar como PNG en esta carpeta con los nombres de arriba.
+### Página 1 · Demanda por estación y franja (P0)
+| Visual | Tipo | Campos |
+|---|---|---|
+| Validaciones 2025 vs. 2024 | Cuadro de resultados con comparación con el año anterior | `Validaciones` (periodo 2025) |
+| Recaudo (COP) 2025 vs. 2024 | Cuadro de resultados con comparación | `Recaudo COP` |
+| Validaciones por troncal | Barras horizontales | `troncal_estacion` × `Validaciones` |
+| Estaciones con más demanda por franja horaria | Tabla dinámica con mapa de calor | filas `nombre_estacion`, columnas `franja_horaria`, `Validaciones` |
+| Validaciones por mes, 2024–2025 | Serie temporal | `fecha` (año-mes) × `Validaciones` |
+
+### Página 2 · Volumen diario por tarifa y estación (P1)
+| Visual | Tipo | Campos |
+|---|---|---|
+| Promedio diario de validaciones 2025 vs. 2024 | Cuadro de resultados con comparación | `Promedio diario` |
+| Promedio diario por tipo de tarifa | Barras horizontales | `tipo_tarifa` × `Promedio diario` |
+| Validaciones por estación y tipo de tarifa | Tabla dinámica con mapa de calor | filas `nombre_estacion`, columnas `tipo_tarifa`, `Validaciones` |
+| Validaciones por mes, tarifa plena vs. subsidiada | Serie temporal con desglose | `fecha` × `Validaciones`, desglose `grupo_tarifa` |
+
+### Página 3 · Rutas y flota: pico vs. valle (P2)
+| Visual | Tipo | Campos |
+|---|---|---|
+| % de validaciones en hora pico vs. meta 55 % | Gráfico de viñetas (objetivo 0,55) | `% en hora pico` |
+| Validaciones por bus en servicio 2025 vs. 2024 | Cuadro de resultados con comparación | `Validaciones por bus` |
+| Validaciones por ruta en hora pico y valle | Barras agrupadas | `cod_ruta` × `Validaciones pico`, `Validaciones valle` |
+| Validaciones por bus en servicio, por ruta | Barras con línea de referencia constante 121,7 («Promedio de la red») | `cod_ruta` × `Validaciones por bus` |
+| Validaciones por hora del día, 0 a 23 h | Columnas (24 barras, orden por `hora` ascendente) | `hora` × `Validaciones` |
+
+## 4. Verificación de cifras
+
+`/dw/conciliacion/04_cifras_tablero.sql` reproduce en SQL las cifras de las tres páginas (por ejemplo 28.291 validaciones y $85.264.100 en 2025; 56,6 % en hora pico; 121,7 validaciones por bus).
