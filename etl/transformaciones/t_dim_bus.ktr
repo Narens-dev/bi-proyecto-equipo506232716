@@ -126,7 +126,7 @@
     <send_true_to>normaliza_codigo_bus</send_true_to>
     <send_false_to>regla_bus_vacio_excluido</send_false_to>
     <compare>
-      <condition><negated>N</negated><leftvalue>id_bus</leftvalue><function>IS NOT EMPTY</function><rightvalue/></condition>
+      <condition><negated>N</negated><leftvalue>id_bus</leftvalue><function>IS NOT NULL</function><rightvalue/></condition>
     </compare>
     <attributes/>
     <cluster_schema/>

@@ -80,3 +80,20 @@ El trabajo es re-ejecutable: cada corrida vacía el DW y lo vuelve a cargar.
 | t_dim_bus | 55.000 | 450 | 0 |
 | t_dim_tarifa | 55.000 | 15 | 0 |
 | t_fact_validaciones | 55.000 | 54.775 | 225 (180 duplicados + 45 montos ≤ 0) |
+
+## Despliegue de las predicciones (Entrega 3)
+
+Trabajo aparte, `etl/trabajos/j_despliegue_predicciones.kjb`. **Se ejecuta después de `j_carga_dw.kjb` y después de correr el notebook** (que genera `modelo/predicciones.csv`).
+
+| # | Entrada del trabajo | Qué hace |
+|---|---|---|
+| 1 | `crear_tabla_pred` (SQL) | Ejecuta `dw/ddl/10_pred_validaciones_estacion_mes.sql`: extiende `dim_tiempo` a ene–mar 2026, crea `dw.pred_validaciones_estacion_mes` si no existe y la vista `dw.v_tablero_predicciones` |
+| 2 | `t_pred_validaciones.ktr` | Lee `modelo/predicciones.csv` (636 filas), vacía la tabla y la recarga con las llaves `sk_estacion` y `sk_tiempo` |
+
+Por consola: `kitchen.bat /file:"<repo>\etl\trabajos\j_despliegue_predicciones.kjb" /level:Basic` (Windows) o `./kitchen.sh -file=<repo>/etl/trabajos/j_despliegue_predicciones.kjb`.
+
+Por qué se usa Pentaho además del notebook: el notebook también escribe la tabla (con SQLAlchemy), pero en Google Colab no llega a un PostgreSQL local. Con el CSV como punto de entrega, el modelo se corre en cualquier entorno y el despliegue en el DW queda en el mismo ETL del resto de la carga.
+
+**Importante:** `j_carga_dw.kjb` ejecuta `TRUNCATE … CASCADE` (script 09), que también vacía `pred_validaciones_estacion_mes` y elimina de `dim_tiempo` los meses de 2026. Si se recarga el DW, hay que volver a ejecutar `j_despliegue_predicciones.kjb`. Las llaves `sk_estacion` se regeneran en el mismo orden en cada carga, así que el CSV sigue siendo válido mientras no cambien las fuentes; si cambian, vuelva a correr el notebook.
+
+Resultado esperado: `t_pred_validaciones` lee 636 y escribe 636 filas (318 de prueba y 318 de pronóstico).

@@ -36,7 +36,7 @@ Docente: Leandro Pájaro Fuentes
 | Fuentes de datos | F1 validaciones (CSV, sintético) · F2 Estaciones Troncales de TRANSMILENIO (CSV) · F3 Trazados Troncales de TRANSMILENIO (GeoJSON) |
 | Integración (ETL) | Pentaho Data Integration 9.4 / 10.x (7 `.ktr` y 1 `.kjb`) |
 | Almacén de datos | PostgreSQL 16, base `movibogota_dw`, esquema `dw` (modelo en estrella: 6 dimensiones + 1 tabla de hechos) |
-| Usuario final | Microsoft Looker Studio (conectado a PostgreSQL) |
+| Usuario final | Microsoft Power BI Desktop (`dashboard/MoviBogota_Tablero.pbix`, conectado a PostgreSQL) · páginas 1–3 de la Entrega 2 también en Looker Studio |
 | Modelo predictivo | Python (notebooks) |
 | Gobierno y versionamiento | GitHub, draw.io |
 
@@ -66,7 +66,7 @@ Docente: Leandro Pájaro Fuentes
 
 ## Cómo reproducir
 
-Requisitos: PostgreSQL 16, Pentaho Data Integration 9.4 o 10.x (Java 11/17) y Looker Studio.
+Requisitos: PostgreSQL 16, Pentaho Data Integration 9.4 o 10.x (Java 11/17), Power BI Desktop (Windows) y Python 3.11+ para el modelo.
 
 1. **Fuentes.** Clonar el repositorio: las tres fuentes originales ya están en [`datos/raw/`](datos/raw/). Su origen y cómo volver a descargarlas está en [`datos/descarga.md`](datos/descarga.md); los diccionarios, en [`datos/diccionarios/`](datos/diccionarios/).
 2. **Data warehouse.** Ejecutar en orden los scripts de [`dw/ddl/`](dw/ddl/) (`00` crea la base; `01`–`08` crean el esquema, las 6 dimensiones y la tabla de hechos con sus llaves).
@@ -88,8 +88,11 @@ Pronóstico de validaciones por estación y mes. Regresión lineal frente a bosq
 | [`modelo/extraccion.sql`](modelo/extraccion.sql) | Consulta que extrae el conjunto de datos del DW (2.544 filas estación × mes) |
 | [`modelo/requirements.txt`](modelo/requirements.txt) | Librerías y versiones |
 | `modelo/figuras/`, `modelo/predicciones.csv` | Gráficos y predicciones que genera el notebook |
+| [`etl/trabajos/j_despliegue_predicciones.kjb`](etl/trabajos/j_despliegue_predicciones.kjb) | Trabajo de Pentaho: crea `pred_*` y carga `modelo/predicciones.csv` en el DW |
 | [`dw/ddl/10_pred_validaciones_estacion_mes.sql`](dw/ddl/10_pred_validaciones_estacion_mes.sql) | Tabla `dw.pred_validaciones_estacion_mes`, extensión de `dim_tiempo` a 2026 y vista del tablero |
-| `dashboard/pagina4_predicciones.png` | Captura de la página de predicciones del tablero |
+| [`dashboard/MoviBogota_Tablero.pbix`](dashboard/MoviBogota_Tablero.pbix) | Tablero de Power BI con la página 4 «Predicciones» |
+| [`dashboard/medidas_powerbi.md`](dashboard/medidas_powerbi.md) | Conexión, relaciones, medidas DAX y diseño de la página 4 |
+| `dashboard/pagina4_predicciones_powerbi.png` | Captura de la página de predicciones en Power BI |
 
 ### Cómo ejecutar el modelo
 
@@ -112,6 +115,14 @@ Pronóstico de validaciones por estación y mes. Regresión lineal frente a bosq
 
 En Google Colab: subir la carpeta `modelo/` y `dw/ddl/10_...sql`, ejecutar `!pip install -r requirements.txt` y definir `DW_URL` con `os.environ` apuntando a un PostgreSQL accesible desde internet.
 
+### Cómo cargar las predicciones con Pentaho (despliegue en el DW)
+
+Después de ejecutar el notebook (genera `modelo/predicciones.csv`), abra en Spoon `etl/trabajos/j_despliegue_predicciones.kjb` y ejecútelo (F9), con `kettle.properties` configurado como en `etl/README.md`. Crea `dw.pred_validaciones_estacion_mes` y la llena con las 636 predicciones. Si recarga el DW con `j_carga_dw.kjb`, repita este paso.
+
 ### Cómo visualizar las predicciones
 
-La página 4 del reporte de Looker Studio (<https://datastudio.google.com/reporting/ff362d1b-b283-4d16-969c-23989bdc0614>) muestra las validaciones reales frente a las predichas por mes y el detalle por estación. Se puede filtrar por troncal, periodo (prueba o pronóstico) y estación. Lee la vista `dw.v_tablero_predicciones`.
+1. Instale Power BI Desktop y abra `dashboard/MoviBogota_Tablero.pbix`. Los datos ya vienen importados, así que se ve sin conectarse al DW.
+2. Vaya a la página 4, **«Predicciones»**. Muestra las validaciones reales frente a las predichas por mes (prueba oct–dic 2025 y pronóstico ene–mar 2026), el MAE y RMSE, y el reparto de buses por troncal. Se filtra por troncal, periodo y estación.
+3. Para actualizar con su propio DW: *Transformar datos › Configuración de origen de datos* → servidor `localhost:5432`, base `movibogota_dw`, y luego *Actualizar*. Lee `dw.pred_validaciones_estacion_mes`, `dw.dim_estacion` y `dw.dim_tiempo`. Detalle en [`dashboard/medidas_powerbi.md`](dashboard/medidas_powerbi.md).
+
+La versión en Looker Studio de la Entrega 2 (<https://datastudio.google.com/reporting/ff362d1b-b283-4d16-969c-23989bdc0614>) también tiene la página de predicciones, sobre la vista `dw.v_tablero_predicciones`.

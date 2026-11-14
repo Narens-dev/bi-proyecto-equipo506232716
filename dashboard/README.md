@@ -1,4 +1,6 @@
-# Tablero — Looker Studio
+# Tablero — Looker Studio (E2) y Power BI (E3)
+
+> **Entrega 3:** el archivo `MoviBogota_Tablero.pbix` (Power BI Desktop) tiene la página «Predicciones». Conexión, relaciones, medidas DAX y diseño: [`medidas_powerbi.md`](medidas_powerbi.md). Captura: `pagina4_predicciones_powerbi.png`.
 
 Reporte: **MoviBogotá S.A. - Tablero de demanda (DW movibogota_dw)**
 <https://datastudio.google.com/reporting/ff362d1b-b283-4d16-969c-23989bdc0614> (pedir acceso al equipo si no abre).
