@@ -55,7 +55,8 @@
     </attributes>
   </connection>
   <order>
-    <hop><from>CSV predicciones</from><to>carga_pred_validaciones</to><enabled>Y</enabled></hop>
+    <hop><from>CSV predicciones</from><to>lookup_sk_estacion</to><enabled>Y</enabled></hop>
+    <hop><from>lookup_sk_estacion</from><to>carga_pred_validaciones</to><enabled>Y</enabled></hop>
   </order>
   <step>
     <name>CSV predicciones</name>
@@ -79,7 +80,8 @@
     <newline_possible>N</newline_possible>
     <encoding>UTF-8</encoding>
     <fields>
-      <field><name>sk_estacion</name><type>Integer</type><format>#</format><currency/><decimal></decimal><group></group><length>15</length><precision>0</precision><trim_type>none</trim_type></field>
+      <field><name>cod_estacion</name><type>String</type><format></format><currency/><decimal></decimal><group></group><length>-1</length><precision>-1</precision><trim_type>both</trim_type></field>
+      <field><name>sk_estacion_origen</name><type>Integer</type><format>#</format><currency/><decimal></decimal><group></group><length>15</length><precision>0</precision><trim_type>none</trim_type></field>
       <field><name>sk_tiempo</name><type>Integer</type><format>#</format><currency/><decimal></decimal><group></group><length>15</length><precision>0</precision><trim_type>none</trim_type></field>
       <field><name>anio</name><type>Integer</type><format>#</format><currency/><decimal></decimal><group></group><length>15</length><precision>0</precision><trim_type>none</trim_type></field>
       <field><name>mes</name><type>Integer</type><format>#</format><currency/><decimal></decimal><group></group><length>15</length><precision>0</precision><trim_type>none</trim_type></field>
@@ -93,6 +95,32 @@
     <cluster_schema/>
     <remotesteps><input></input><output></output></remotesteps>
     <GUI><xloc>150</xloc><yloc>100</yloc><draw>Y</draw></GUI>
+  </step>
+  <step>
+    <name>lookup_sk_estacion</name>
+    <type>DBLookup</type>
+    <description>La llave sk_estacion se busca por el código natural de la estación (cod_estacion): las llaves sustitutas cambian si el DW se recarga en otro orden</description>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning><method>none</method><schema_name/></partitioning>
+    <connection>dw_movibogota</connection>
+    <cache>Y</cache>
+    <cache_load_all>Y</cache_load_all>
+    <cache_size>0</cache_size>
+    <lookup>
+      <schema>dw</schema>
+      <table>dim_estacion</table>
+      <orderby/>
+      <fail_on_multiple>Y</fail_on_multiple>
+      <eat_row_on_failure>N</eat_row_on_failure>
+      <key><name>cod_estacion</name><field>cod_estacion</field><condition>=</condition><name2/></key>
+      <value><name>sk_estacion</name><rename>sk_estacion</rename><default>-1</default><type>Integer</type></value>
+    </lookup>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps><input></input><output></output></remotesteps>
+    <GUI><xloc>300</xloc><yloc>100</yloc><draw>Y</draw></GUI>
   </step>
   <step>
     <name>carga_pred_validaciones</name>
@@ -133,7 +161,7 @@
     <attributes/>
     <cluster_schema/>
     <remotesteps><input></input><output></output></remotesteps>
-    <GUI><xloc>450</xloc><yloc>100</yloc><draw>Y</draw></GUI>
+    <GUI><xloc>500</xloc><yloc>100</yloc><draw>Y</draw></GUI>
   </step>
   <step_error_handling>
 
